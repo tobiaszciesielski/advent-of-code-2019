@@ -2,131 +2,80 @@ import re
 import time
 
 
+# part 1: 0.000997304916381836 s
+def day_8():
+    # part 1
+    with open('inputs/input_day8.txt', mode='r') as file:
+        encoded_image = file.read().strip()
+
+    encoded_image_length = len(encoded_image)
+    layer_size = 25*6
+    layers_count = int(encoded_image_length / layer_size)
+
+    image = []
+    for i in range(layers_count):
+        stop = layer_size * (i+1)
+        start = stop - layer_size
+        layer = encoded_image[start:stop]
+        image.append(layer)
+
+    fewest_zeros = min(image, key=lambda layer: layer.count('0'))
+    print(fewest_zeros.count('1') * fewest_zeros.count('2'))
+
+    # part 2
+    # 0 is black, 1 is white, and 2 is transparent.
+    final_image = []
+    for i in range(layer_size):
+        for j in range(layers_count):
+            pixel = image[j][i]
+            if pixel != '2':
+                final_image.append(pixel)
+                break
+
+    for i in range(6*25):
+        if final_image[i] == '1':
+            print('#', end='')
+        else:
+            print(' ', end='')
+        if i % 25 == 24:
+            print()
+
+
+def day_4():
+    range = [int(num) for num in "153517 - 630395".split(sep=' - ')]
+    for num in range:
+        print(num)
+
+
+# time: 0.1635301113128662 s
 def day_3():
-    def create_surface(moves_1, moves_2):
-        current_horizontal = 0
-        current_vertical = 0
-        u_1, d_1, l_1, r_1 = 0, 0, 0, 0
-        for m in moves_1:
-            direction, steps = m
+    # previous part 1: 8.4215726852417 s
+    wires = open("inputs/input_day3.txt").readlines()
+    wire_A, wire_B = [x.split(',') for x in wires]
+    DX = {'L': -1, 'R': 1, 'U': 0, 'D': 0}
+    DY = {'L': 0, 'R': 0, 'U': 1, 'D': -1}
 
-            if direction == 'U':
-                current_horizontal += steps
-                if current_horizontal > u_1:
-                    u_1 = current_horizontal
+    def points(data):
+        x = 0
+        y = 0
+        wire_points = set()
+        for move in data:
+            direction = move[0]
+            steps = int(move[1:])
+            for i in range(steps):
+                x += DX[direction]
+                y += DY[direction]
+                wire_points.add((x, y))
+        return wire_points
 
-            elif direction == 'D':
-                current_horizontal -= steps
-                if current_horizontal < d_1:
-                    d_1 = current_horizontal
-
-            elif direction == 'R':
-                current_vertical += steps
-                if current_vertical > r_1:
-                    r_1 = current_vertical
-
-            elif direction == 'L':
-                current_vertical -= steps
-                if current_vertical < l_1:
-                    l_1 = current_vertical
-
-        current_horizontal = 0
-        current_vertical = 0
-        u_2, d_2, l_2, r_2 = 0, 0, 0, 0
-        for m in moves_2:
-            direction, steps = m
-            if direction == 'U':
-                current_horizontal += steps
-                if current_horizontal > u_1:
-                    u_2 = current_horizontal
-
-            elif direction == 'D':
-                current_horizontal -= steps
-                if current_horizontal < d_2:
-                    d_2 = current_horizontal
-
-            elif direction == 'R':
-                current_vertical += steps
-                if current_vertical > r_2:
-                    r_2 = current_vertical
-
-            elif direction == 'L':
-                current_vertical -= steps
-                if current_vertical < l_2:
-                    l_2 = current_vertical
-
-        u_max = max(abs(u_1), abs(u_2))
-        d_max = max(abs(d_1), abs(d_2))
-        r_max = max(abs(r_1), abs(r_2))
-        l_max = max(abs(l_1), abs(l_2))
-        matrix_size = (u_max+d_max + 1, r_max + l_max + 1)
-        matrix = [['.' for _ in range(matrix_size[1])] for __ in range(matrix_size[0])]
-        starting_point = (u_max, l_max)
-        matrix[starting_point[0]][starting_point[1]] = 'o'
-
-        return matrix, starting_point
-
-    def allocate_wire(matrix, starting_point, moves, sign):
-        crossing_points = []
-        x, y = starting_point  # current position
-        for move in moves:
-            direction, steps = move
-            if direction == 'U':
-                for n in range(1, steps + 1):
-                    val = matrix[x - n][y]
-                    if val == '.':
-                        matrix[x - n][y] = sign
-                    elif val != sign:
-                        matrix[x - n][y] = '+'
-                        crossing_points.append((x - n, y))
-                x, y = (x - steps, y)
-            elif direction == 'D':
-                for n in range(1, steps + 1):
-                    val = matrix[x + n][y]
-                    if val == '.':
-                        matrix[x + n][y] = sign
-                    elif val != sign:
-                        matrix[x + n][y] = '+'
-                        crossing_points.append((x + n, y))
-                x, y = (x + steps, y)
-            elif direction == 'L':
-                for n in range(1, steps + 1):
-                    val = matrix[x][y - n]
-                    if val == '.':
-                        matrix[x][y - n] = sign
-                    elif val != sign:
-                        matrix[x][y - n] = '+'
-                        crossing_points.append((x, y - n))
-                x, y = (x, y - steps)
-            elif direction == 'R':
-                for n in range(1, steps + 1):
-                    val = matrix[x][y + n]
-                    if val == '.':
-                        matrix[x][y + n] = sign
-                    elif val != sign:
-                        matrix[x][y + n] = '+'
-                        crossing_points.append((x, y + n))
-                x, y = (x, y + steps)
-
-        return crossing_points
-
-    def compute_min_manhattan_distance(matrix, starting_point, crossing_points):
-        central_x, central_y = starting_point
-        return min([abs(central_x - x) + abs(central_y - y) for x, y in crossing_points])
-
-    content = open('inputs/input_day3.txt', mode='r').readlines()
-    wires = []
-    for i in range(2):
-        wires.append([(p[0], int(p[1])) for p in re.findall('([UDLR])(\d+)', content[i])])
-
-    surface, central_port = create_surface(wires[0], wires[1])
-    allocate_wire(surface, central_port, wires[0], sign='#')
-    crossing_points = allocate_wire(surface, central_port, wires[1], sign='*')
-
-    print(compute_min_manhattan_distance(map, central_port, crossing_points))
+    wire_A_points = points(wire_A)
+    wire_B_points = points(wire_B)
+    intersects = wire_A_points & wire_B_points
+    ans_end = min([abs(x) + abs(y) for (x, y) in intersects])
+    print(ans_end)
 
 
-
+# time: 1.8396062850952148 s
 def day_2():
     def compute(index_1, index_2):
         content = open('inputs/input_day2.txt', mode='r').read()
@@ -153,6 +102,7 @@ def day_2():
                 break
 
 
+# time: 0.0009648799896240234 s
 def day_1():
     def fuel(n):
         n = int(n / 3) - 2
@@ -168,9 +118,10 @@ def day_1():
 
 if __name__ == '__main__':
     start = time.time()
-    day_1()
-    day_2()
-    day_3()
-    day_4()
+    # day_1()
+    # day_2()
+    # day_3()
+    # day_4()
+    day_8()
     end = time.time()
-    print(end - start)
+    print("time:", end - start, "s")
