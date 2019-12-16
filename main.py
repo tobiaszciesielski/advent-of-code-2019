@@ -41,10 +41,36 @@ def day_8():
             print()
 
 
+# part 1: 0.5545520782470703 s
 def day_4():
-    range = [int(num) for num in "153517 - 630395".split(sep=' - ')]
-    for num in range:
-        print(num)
+    r = [num for num in "153517 - 630395".split(sep=' - ')]
+    lower, upper = r
+
+    # # primitive implementation: 0.5077588558197021 s
+    # sum = 0
+    # for password in range(int(lower), int(upper) + 1):
+    #     password = str(password)
+    #     repeating = False
+    #     increasing = True
+    #     for i in range(len(password) - 1):
+    #         if password[i] > password[i+1]:
+    #             increasing = False
+    #             break
+    #         if password[i] == password[i+1]:
+    #             repeating = True
+    #
+    #     if increasing and repeating:
+    #         sum += 1
+    #
+    # print(sum)
+
+    # pythonic: 0.5634617805480957 s
+    passwords = [str(s) for s in range(int(lower), int(upper) + 1)]
+    increasing = [s for s in passwords if s == ''.join(sorted(list(s)))]
+    results_1 = [s for s in increasing if any([s.count(digit) >= 2 for digit in set(s)])]
+    results_2 = [s for s in increasing if any([s.count(digit) == 2 for digit in set(s)])]
+    print("Part 1: ", len(results_1))
+    print("Part 2: ", len(results_2))
 
 
 # time: 0.1635301113128662 s
@@ -112,8 +138,8 @@ def day_1():
             return 0
 
     content = open('inputs/input_day1.txt', mode='r').readlines()
-    print('part 1:', sum([int(float(n) / 3) - 2 for n in content]))
-    print('part 2:', sum([fuel(int(n)) for n in content]))
+    print('Part 1:', sum([int(float(n) / 3) - 2 for n in content]))
+    print('Part 2:', sum([fuel(int(n)) for n in content]))
 
 
 if __name__ == '__main__':
@@ -122,6 +148,6 @@ if __name__ == '__main__':
     # day_2()
     # day_3()
     # day_4()
-    day_8()
+    # day_8()
     end = time.time()
     print("time:", end - start, "s")
