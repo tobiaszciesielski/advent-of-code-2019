@@ -2,7 +2,7 @@ import re
 import time
 
 
-# part 1: 0.000997304916381836 s
+# time: 0.000997304916381836 s
 def day_8():
     # part 1
     with open('inputs/input_day8.txt', mode='r') as file:
@@ -40,7 +40,24 @@ def day_8():
         if i % 25 == 24:
             print()
 
+# time: 0.014954328536987305 s
+def day_6():
+    def get_orbits_chain(orbit, to):
+        while orbit != to:
+            orbit = orbit_dict[orbit]
+            yield orbit
 
+
+    with open('inputs/input_day6.txt', mode='r') as file:
+        orbit_map = [line.split(')') for line in file.read().splitlines()]
+
+    orbit_dict = {value: key for (key, value) in orbit_map}
+    part_1 = sum(len(list(get_orbits_chain(orbit, 'COM'))) for orbit in orbit_dict)
+    part_2 =  len(set(get_orbits_chain('YOU', 'COM')) ^ set(get_orbits_chain('SAN', 'COM')))
+    print(part_1, part_2)
+
+
+# time: 0.0009975433349609375 s
 def day_5():
     def parse_code(code):
         mode = str(code)
@@ -61,7 +78,7 @@ def day_5():
         elif opcode == 2:
             program[program[i+3]] = operands[0] * operands[1]
         elif opcode == 3:
-            program[program[i+1]] = int(input("input: "))
+            program[program[i+1]] = 5 # int(input("input: "))
         elif opcode == 4:
             print(operands[0])
         elif opcode == 5:
@@ -69,36 +86,23 @@ def day_5():
         elif opcode == 6:
             i = operands[1] - 3 if operands[0] == 0 else i
         elif opcode == 7:
-            program[program[i+3]] = 1 if operands[0] < operands[1] else program[program[i+3]] = 0
+            if operands[0] < operands[1] :
+                program[program[i + 3]] = 1
+            else:
+                program[program[i+3]] = 0
         elif opcode == 8:
-                program[program[i+3]] = 1 if operands[0] == operands[1] else program[program[i+3]] = 0
+            if operands[0] == operands[1]:
+                program[program[i+3]] = 1
+            else:
+                program[program[i+3]] = 0
 
         i += program_steps[opcode] + 1
-
 
 
 # part 1: 0.5545520782470703 s
 def day_4():
     r = [num for num in "153517 - 630395".split(sep=' - ')]
     lower, upper = r
-
-    # # primitive implementation: 0.5077588558197021 s
-    # sum = 0
-    # for password in range(int(lower), int(upper) + 1):
-    #     password = str(password)
-    #     repeating = False
-    #     increasing = True
-    #     for i in range(len(password) - 1):
-    #         if password[i] > password[i+1]:
-    #             increasing = False
-    #             break
-    #         if password[i] == password[i+1]:
-    #             repeating = True
-    #
-    #     if increasing and repeating:
-    #         sum += 1
-    #
-    # print(sum)
 
     # pythonic: 0.5634617805480957 s
     passwords = [str(s) for s in range(int(lower), int(upper) + 1)]
@@ -184,7 +188,8 @@ if __name__ == '__main__':
     # day_2()
     # day_3()
     # day_4()
-    day_5()
+    # day_5()
+    day_6()
     # day_8()
     end = time.time()
     print("time:", end - start, "s")
